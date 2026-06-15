@@ -1,0 +1,24 @@
+# Environment Variables and Credentials
+.env
+.env.*
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python caching and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# User Data & Generated Reports (Study Plans)
+syllabus.json
+timetable.json
+timetable.pdf
+output_test.txt
+
+# OS-specific files
+.DS_Store
+Thumbs.db
