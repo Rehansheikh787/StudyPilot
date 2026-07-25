@@ -17,16 +17,22 @@ import extract
 import planner
 import pdf_export
 import reminder
+import progress as progress_mod
 
 importlib.reload(extract)
 importlib.reload(planner)
 importlib.reload(pdf_export)
 importlib.reload(reminder)
+importlib.reload(progress_mod)
 
-from extract import extract_text_from_pdf, extract_structured_syllabus, clean_and_parse_json
-from planner import allocate_hours, generate_weekly_plan, clean_json_response, add_metadata_to_timetable
+from extract import extract_text_from_pdf, extract_structured_syllabus
+from planner import allocate_hours, generate_weekly_plan, add_metadata_to_timetable
 from pdf_export import generate_pdf, load_timetable, get_urgency
 from reminder import send_daily_nudge
+from progress import (
+    compute_adherence, get_remaining_syllabus, mark_slot,
+    is_slot_completed, days_until_earliest_exam, load_progress,
+)
 
 # Helper for email validation
 def is_valid_email(email_str):
@@ -62,6 +68,8 @@ if "timetable_data" not in st.session_state:
     st.session_state.summary = None
 if "selected_day" not in st.session_state:
     st.session_state.selected_day = 0
+if "last_provider" not in st.session_state:
+    st.session_state.last_provider = None
 
 # Try to auto-load saved timetable if session state is empty
 if st.session_state.timetable_data is None:
@@ -374,11 +382,11 @@ else:
     st.sidebar.write("---")
     if st.sidebar.button("🗑️ Reset App & Clear Plan", use_container_width=True, key="sb_reset"):
         # Delete generated files
-        for f_path in ["timetable.json", "timetable.pdf", "syllabus.json"]:
+        for f_path in ["timetable.json", "timetable.pdf", "syllabus.json", "progress.json"]:
             if os.path.exists(f_path):
                 try:
                     os.remove(f_path)
-                except:
+                except Exception:
                     pass
         # Clear session state
         st.session_state.timetable_data = None
@@ -402,6 +410,16 @@ else:
         </div>
     </div>
     """)
+
+    # ── Provider transparency badge ──
+    if st.session_state.last_provider:
+        p = st.session_state.last_provider
+        if p == "gemini":
+            st.caption("✨ Generated with Gemini")
+        elif p == "groq":
+            st.caption("⚡ Generated with Groq (Gemini fallback)")
+        elif p == "local-fallback":
+            st.warning("⚠️ Both AI providers were unavailable — this plan was built with the local deterministic fallback (no chapter sequencing intelligence). Add a working GEMINI_API_KEY or GROQ_API_KEY and regenerate for a smarter plan.")
 
     # ── Compute dashboard data ──
     total_sessions = len(st.session_state.rows)
@@ -485,7 +503,7 @@ else:
     st.write("")
 
     # ── Dashboard tabs ──
-    tab1, tab2 = st.tabs(["📊 Workspace Dashboard", "📧 Email Nudges"])
+    tab1, tab2, tab3 = st.tabs(["📊 Workspace Dashboard", "📧 Email Nudges", "✅ Progress & Replan"])
 
     # ── TAB 1: Bento Grid ──
     with tab1:
@@ -566,6 +584,18 @@ else:
                             </div>
                             """)
 
+                            chapter_key = chapters[0] if isinstance(chapters, list) and chapters else "General"
+                            cb_key = f"done_{day_date}_{slot.get('subject')}_{chapter_key}"
+                            currently_done = is_slot_completed(day_date, slot.get('subject'), chapter_key)
+                            checked = st.checkbox(
+                                "✅ Mark this session complete",
+                                value=currently_done,
+                                key=cb_key,
+                            )
+                            if checked != currently_done:
+                                mark_slot(day_date, slot.get('subject'), chapter_key, checked)
+                                st.rerun()
+
         with side_col:
             # ── Priority Breakdown ──
             st.markdown("<h3 style='color:#0f172a; margin-top:0.5rem; font-weight:800; font-size:1.4rem;'>📊 Priority Breakdown</h3>", unsafe_allow_html=True)
@@ -621,6 +651,7 @@ else:
                 <p style="font-size:0.88rem; color:#64748b; margin-bottom:0.75rem;">
                     Export schedule or trigger email reminder:
                 </p>
+            </div>
             """)
 
             if os.path.exists("timetable.pdf"):
@@ -628,8 +659,6 @@ else:
                     st.download_button("📥 Download Study Plan PDF", data=f,
                                        file_name="my_study_plan.pdf", mime="application/pdf",
                                        use_container_width=True)
-
-            render_html("</div>")
 
             # ── AI Summary ──
             if st.session_state.summary:
@@ -687,6 +716,83 @@ else:
             else:
                 st.warning("No study sessions scheduled for this date.")
 
+    # ── TAB 3: Progress & Adaptive Replanning ──
+    with tab3:
+        st.markdown("### ✅ Progress & Adaptive Replanning")
+        st.write(
+            "Check off sessions as you complete them in the **Workspace Dashboard** tab. "
+            "This tab tracks your adherence and can regenerate the remaining schedule "
+            "around what's actually left — instead of repeating chapters you've already covered."
+        )
+
+        stats = compute_adherence(st.session_state.timetable_data)
+
+        pcol1, pcol2, pcol3 = st.columns(3)
+        with pcol1:
+            st.metric("Adherence (days so far)", f"{stats['adherence_pct']}%")
+        with pcol2:
+            st.metric("Sessions completed", f"{stats['completed_slots']} / {stats['total_slots']}")
+        with pcol3:
+            done_h = stats["completed_minutes"] // 60
+            done_m = stats["completed_minutes"] % 60
+            st.metric("Time actually studied", f"{done_h}h {done_m}m")
+
+        if stats["per_subject"]:
+            st.markdown("#### 📚 Per-Subject Progress")
+            for subj, s in stats["per_subject"].items():
+                pct = round((s["done"] / s["total"]) * 100) if s["total"] else 0
+                st.progress(pct / 100, text=f"{subj} — {s['done']}/{s['total']} sessions ({pct}%)")
+
+        st.write("")
+        st.divider()
+        st.markdown("#### 🔄 Replan Remaining Days")
+        st.write(
+            "Falling behind, or finished early? Regenerate the schedule for the days "
+            "ahead using only what's genuinely left to cover, re-prioritized against "
+            "today's date and remaining time to each exam."
+        )
+
+        if st.button("🔄 Replan Remaining Days", use_container_width=True, key="replan_btn"):
+            if not os.path.exists("syllabus.json"):
+                st.error("❌ Original syllabus.json not found — cannot determine remaining chapters. Try regenerating your plan from a PDF first.")
+            else:
+                with st.spinner("Recalculating what's left and generating a fresh plan…"):
+                    try:
+                        with open("syllabus.json", "r", encoding="utf-8") as f:
+                            original_syllabus = json.load(f)
+
+                        remaining = get_remaining_syllabus(original_syllabus, st.session_state.timetable_data)
+                        fully_done = [s["subject"] for s in remaining if s.get("_fully_completed")]
+                        still_active = [s for s in remaining if s.get("chapters")]
+
+                        if not still_active:
+                            st.success("🎉 Everything in your syllabus is marked complete — nothing left to replan!")
+                        else:
+                            replan_days = min(7, days_until_earliest_exam(still_active))
+                            allocated = allocate_hours(still_active, daily_hours=hours)
+                            new_timetable, replan_provider = generate_weekly_plan(
+                                allocated, daily_hours=hours, days_ahead=replan_days
+                            )
+                            st.session_state.last_provider = replan_provider
+                            new_timetable = add_metadata_to_timetable(new_timetable, allocated)
+
+                            with open("timetable.json", "w", encoding="utf-8") as f:
+                                json.dump(new_timetable, f, indent=2)
+
+                            rows, summary = load_timetable("timetable.json")
+                            generate_pdf(rows, summary, output_path="timetable.pdf")
+
+                            st.session_state.timetable_data = new_timetable
+                            st.session_state.rows = rows
+                            st.session_state.summary = summary
+
+                            if fully_done:
+                                st.toast(f"✅ {', '.join(fully_done)} fully complete — excluded from replan!")
+                            st.success(f"🔄 Replanned the next {replan_days} day(s) around your remaining syllabus.")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Replanning failed: {e}")
+
 
 # ─── 6. GENERATION LOGIC (shared between welcome & sidebar) ───
 if generate_clicked:
@@ -702,18 +808,18 @@ if generate_clicked:
                 if not raw_text.strip():
                     st.error("❌ No readable text could be extracted from this PDF. Please ensure it is a text-based PDF (not a scanned image without OCR).")
                     st.stop()
-                
-                raw_syllabus = extract_structured_syllabus(raw_text)
-                syllabus = clean_and_parse_json(raw_syllabus)
-                
+
+                syllabus, extract_provider = extract_structured_syllabus(raw_text)
+                st.session_state.last_provider = extract_provider
+
                 if not syllabus:
-                    st.error("❌ The AI could not identify any structured syllabus entries. Please check the PDF contents.")
+                    st.error("❌ Could not identify any structured syllabus entries. Please check the PDF contents.")
                     st.stop()
                 else:
                     try:
                         with open("syllabus.json", "w", encoding="utf-8") as f:
                             json.dump(syllabus, f, indent=2)
-                    except Exception as e:
+                    except Exception:
                         pass
             except Exception as e:
                 st.error(f"❌ Failed to parse syllabus PDF: {e}")
@@ -725,9 +831,8 @@ if generate_clicked:
         with st.spinner("⏳ Step 2/3 — Calculating priorities and generating timetable…"):
             try:
                 allocated = allocate_hours(syllabus, daily_hours=hours)
-                raw_timetable = generate_weekly_plan(allocated, daily_hours=hours)
-                cleaned_timetable = clean_json_response(raw_timetable)
-                timetable_data = json.loads(cleaned_timetable)
+                timetable_data, plan_provider = generate_weekly_plan(allocated, daily_hours=hours)
+                st.session_state.last_provider = plan_provider
                 timetable_data = add_metadata_to_timetable(timetable_data, allocated)
                 with open("timetable.json", "w", encoding="utf-8") as f:
                     json.dump(timetable_data, f, indent=2)

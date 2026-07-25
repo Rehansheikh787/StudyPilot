@@ -103,7 +103,7 @@ def send_daily_nudge(rows, recipient_email, target_date=None):
                 print(f"  - {d}")
             print(f"\nTo test a specific date, run:\n  python reminder.py --date {available_dates[0]}")
         return
- 
+
     # Fetch environment configurations (support both GMAIL and EMAIL prefixes)
     sender_email = os.getenv("EMAIL_ID") or os.getenv("GMAIL_ID")
     app_password = os.getenv("EMAIL_PASSWORD") or os.getenv("GMAIL_PASSWORD")

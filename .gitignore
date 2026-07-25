@@ -15,9 +15,14 @@ __pycache__/
 
 # User Data & Generated Reports (Study Plans)
 syllabus.json
-timetable.json
 timetable.pdf
 output_test.txt
+progress.json
+
+# NOTE: timetable.json is intentionally NOT ignored.
+# Commit it after generating your week's plan so the GitHub Actions
+# daily reminder workflow (.github/workflows/daily-reminder.yml) has
+# something to read and email each morning without regenerating via AI.
 
 # OS-specific files
 .DS_Store

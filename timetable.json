@@ -1,0 +1,131 @@
+{
+  "timetable": [
+    {
+      "day": 1,
+      "date": "2026-06-15",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Overview and introduction to counterfactual causality"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 300
+    },
+    {
+      "day": 2,
+      "date": "2026-06-16",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Causes and effects"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 300
+    },
+    {
+      "day": 3,
+      "date": "2026-06-17",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Revisiting regression estimators of causal effects"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 300
+    },
+    {
+      "day": 4,
+      "date": "2026-06-18",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Matching and weighting"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 300
+    },
+    {
+      "day": 5,
+      "date": "2026-06-19",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Instrumental variables"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 300
+    },
+    {
+      "day": 6,
+      "date": "2026-06-20",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Panel and difference-in-differences estimators"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        },
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 30,
+          "chapters_to_cover": [],
+          "notes": "Revision",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 330
+    },
+    {
+      "day": 7,
+      "date": "2026-06-21",
+      "slots": [
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 300,
+          "chapters_to_cover": [
+            "Regression discontinuity designs"
+          ],
+          "notes": "",
+          "exam_date": "2019-04-23"
+        },
+        {
+          "subject": "Statistics II: Statistical Modeling and Causal Inference",
+          "duration_minutes": 30,
+          "chapters_to_cover": [],
+          "notes": "Revision",
+          "exam_date": "2019-04-23"
+        }
+      ],
+      "total_study_minutes": 330
+    }
+  ],
+  "weekly_summary": "Statistics II: Statistical Modeling and Causal Inference study plan for 7 days with 5 hours of study per day, including 10-minute breaks between subjects and 30-minute revision slots on weekends."
+}

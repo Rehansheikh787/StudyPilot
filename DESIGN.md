@@ -50,45 +50,45 @@ colors:
   surface-variant: '#d3e4fe'
 typography:
   display-lg:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 48px
     fontWeight: '800'
     lineHeight: '1.1'
     letterSpacing: -0.02em
   headline-lg:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 32px
     fontWeight: '700'
     lineHeight: '1.2'
     letterSpacing: -0.01em
   headline-lg-mobile:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 24px
     fontWeight: '700'
     lineHeight: '1.2'
   headline-md:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 24px
     fontWeight: '600'
     lineHeight: '1.3'
   body-lg:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 18px
     fontWeight: '400'
     lineHeight: '1.6'
   body-md:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 16px
     fontWeight: '400'
     lineHeight: '1.5'
   label-md:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 14px
     fontWeight: '600'
     lineHeight: '1'
     letterSpacing: 0.05em
   stats-num:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 36px
     fontWeight: '700'
     lineHeight: '1'
@@ -125,7 +125,7 @@ The palette is anchored by **Midnight Navy** (#0F172A) for deep contrast and aut
 
 ## Typography
 
-The design system exclusively utilizes **Inter** to leverage its exceptional legibility and neutral, modern character. 
+The design system exclusively utilizes **Plus Jakarta Sans** to leverage its exceptional legibility and warm, modern character. 
 
 Hierarchy is established through tight letter-spacing in headlines for a "compact" premium look, while body text is given generous line height to promote readability during long study planning sessions. Labels use a slightly increased letter-spacing and semi-bold weight to differentiate themselves from instructional text without requiring additional color weight. For numerical data (like study hours), a specialized `stats-num` style ensures progress metrics are the most prominent elements on the dashboard.
 
